@@ -1,13 +1,17 @@
 #!/bin/bash
 
 # 更新系统并安装必要的软件包
-apt update && apt upgrade -y
-apt install -y wget curl net-tools ufw dante-server
+apt update -y && apt upgrade -y
+apt install -y dante-server wget curl net-tools
 
-# 创建日志目录
+# 创建日志目录和文件
 mkdir -p /var/log
-touch /var/log/danted.log
 chmod 755 /var/log
+
+# 创建日志文件
+if [ ! -f /var/log/danted.log ]; then
+    touch /var/log/danted.log
+fi
 chmod 666 /var/log/danted.log
 
 # 写入配置文件
@@ -31,30 +35,28 @@ sockspass {
 }
 EOF
 
-# 创建用户并设置密码
+# 创建用户
 useradd -m proxyuser
-echo "proxyuser:proxy1234" | chpasswd
 
-# 启用并启动 danted 服务
+# 设置用户密码
+echo 'proxyuser:proxy1234' | chpasswd
+
+# 重启Dante服务
 systemctl restart danted
 systemctl enable danted
 
-# 配置防火墙
-ufw allow 1080/tcp
-ufw allow 1080/udp
-ufw allow OpenSSH
-ufw --force enable
+# 检查Dante服务状态
+systemctl status danted
 
-# 显示配置信息
-echo -e "\n\n====================================="
-echo "Dante Socks5 配置完成！"
-echo "服务器IP地址: $(curl -s ifconfig.me)"
-echo "端口号: 1080"
-echo "用户名: proxyuser"
-echo "密码: proxy1234"
-echo -e "=====================================\n\n"
+# 检查端口监听
+ss -ltnp | grep 1080
 
-# 保存配置信息到文件
-echo -e "IP: $(curl -s ifconfig.me)\nPort: 1080\nUser: proxyuser\nPassword: proxy1234" > /root/proxy_info.txt
-
-echo "安装完成。配置信息保存在 /root/proxy_info.txt"
+# 输出配置信息
+IP=$(curl -s ifconfig.me)
+echo "Socks5 ✔️"
+echo "IP : $IP"
+echo "Port : 1080"
+echo "User : proxyuser"
+echo "Password : proxy1234"
+echo "✔️ 你的服务器已经配置完成"
+echo "脚本配置完成" > /root/proxy_info.txt
