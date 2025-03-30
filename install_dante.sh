@@ -1,20 +1,20 @@
 #!/bin/bash
 
-# 更新系统并安装必要的软件
-apt update -y && apt upgrade -y
+# 更新系统并安装必要的软件包
+apt update && apt upgrade -y
 apt install -y dante-server curl wget net-tools
 
-# 创建日志目录
+# 创建日志目录并设置权限
 mkdir -p /var/log
-mkdir -p /var/log/danted.log
 chmod 755 /var/log
+touch /var/log/danted.log
 chmod 666 /var/log/danted.log
 
 # 创建用户
 useradd -m proxyuser
 echo "proxyuser:proxy1234" | chpasswd
 
-# 配置文件路径
+# 写入配置文件
 cat > /etc/danted.conf << EOF
 logoutput: /var/log/danted.log
 internal: 0.0.0.0 port = 1080
@@ -35,15 +35,13 @@ sockspass {
 }
 EOF
 
-# 确认配置文件无语法错误
-danted -f /etc/danted.conf -t
-
-# 重新启动 danted 服务
+# 启动服务并设置开机启动
 systemctl restart danted
 systemctl enable danted
 
-# 检查 danted 状态
-systemctl status danted
-
-# 保存配置信息到文件
-echo -e "Socks5 ✔\nIP: $(curl -s ifconfig.me)\nPort: 1080\nUser: proxyuser\nPassword: proxy1234" > /root/proxy_info.txt
+# 输出配置信息
+echo "Socks5配置完成"
+echo "IP地址: $(curl -s ifconfig.me)"
+echo "端口: 1080"
+echo "用户名: proxyuser"
+echo "密码: proxy1234"
