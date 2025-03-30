@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# 更新系统并安装 Dante
-apt update -y && apt install -y dante-server
+# 更新系统并安装必要工具
+apt update -y && apt install -y dante-server wget curl
 
-# 写入配置文件
+# 写入 Dante 配置文件
 cat > /etc/danted.conf <<EOF
 logoutput: /var/log/danted.log
 internal: 0.0.0.0 port = 1080
@@ -27,13 +27,12 @@ EOF
 useradd -r proxyuser
 echo 'proxyuser:proxy1234' | chpasswd
 
-# 启动服务并设置自启动
+# 开启并自动启动 Dante 服务
 systemctl restart danted
 systemctl enable danted
 
-# 显示代理信息
-echo "Socks5 代理已配置完成！以下是你的代理信息："
-echo "IP地址: $(curl -s ifconfig.me)"
-echo "端口: 1080"
-echo "用户名: proxyuser"
-echo "密码: proxy1234"
+# 显示代理信息并保存到文件
+IP=$(curl -s ifconfig.me)
+echo -e "Socks5 代理配置完成！\nIP地址: $IP\n端口: 1080\n用户名: proxyuser\n密码: proxy1234" | tee /root/proxy_info.txt
+
+echo "✅ 配置完成！你的代理信息已保存到 /root/proxy_info.txt"
