@@ -24,6 +24,11 @@ client pass {
     log: connect disconnect
 }
 
+client block {
+    from: 0.0.0.0/0 to: 127.0.0.1/8
+    log: connect disconnect
+}
+
 sockspass {
     from: 0.0.0.0/0 to: 0.0.0.0/0
     protocol: tcp udp
