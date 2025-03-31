@@ -9,7 +9,7 @@ mkdir -p /var/log
 touch /var/log/danted.log
 chmod 777 /var/log/danted.log
 
-# 检查用户是否已存在，避免重复创建
+# 创建用户（如果不存在）
 if ! id "proxyuser" &>/dev/null; then
     useradd -m -s /usr/sbin/nologin proxyuser
     echo "proxyuser:proxy1234" | chpasswd
@@ -36,30 +36,22 @@ sockspass {
 }
 EOF
 
-# 重启 Dante 服务并设置开机自动启动
-systemctl restart danted
+# 设置 danted 服务配置
+systemctl daemon-reload
 systemctl enable danted
 
-# 显示配置信息
-echo -e "Socks5代理已成功配置!\n"
-echo "IP 地址：$(curl -s ifconfig.me)"
-echo "端口：1080"
-echo "用户名：proxyuser"
-echo "密码：proxy1234"
-
-# 将代理信息保存到文件
-cat > /root/proxy_info.txt <<EOF
-Socks5 代理信息：
-IP 地址：$(curl -s ifconfig.me)
-端口：1080
-用户名：proxyuser
-密码：proxy1234
-EOF
+# 启动并重启服务
+systemctl restart danted
 
 # 检查服务状态
-echo "正在检查服务状态..."
 systemctl status danted
 
-# 提示查看日志
-echo -e "\n要查看日志信息，请使用以下命令："
-echo "tail -f /var/log/danted.log"
+# 保存代理信息到文件
+echo "Socks5 代理已成功配置!" > /root/proxy_info.txt
+echo "IP 地址：$(curl -s ifconfig.me)" >> /root/proxy_info.txt
+echo "端口：1080" >> /root/proxy_info.txt
+echo "用户名：proxyuser" >> /root/proxy_info.txt
+echo "密码：proxy1234" >> /root/proxy_info.txt
+
+# 显示配置信息
+cat /root/proxy_info.txt
